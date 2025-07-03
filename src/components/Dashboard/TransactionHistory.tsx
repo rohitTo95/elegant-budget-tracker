@@ -14,6 +14,11 @@ interface TransactionHistoryProps {
 }
 
 const TransactionHistory = ({ transactions }: TransactionHistoryProps) => {
+  // Sort transactions by date (newest first)
+  const sortedTransactions = [...transactions].sort((a, b) => {
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-IN", {
@@ -38,7 +43,7 @@ const TransactionHistory = ({ transactions }: TransactionHistoryProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {transactions.map((transaction) => (
+            {sortedTransactions.map((transaction) => (
               <TableRow key={transaction.id}>
                 <TableCell>
                   <Badge 
