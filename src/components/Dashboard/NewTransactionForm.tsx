@@ -5,8 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Transaction } from "@/types";
 
-const NewTransactionForm = () => {
+interface NewTransactionFormProps {
+  onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
+}
+
+const NewTransactionForm = ({ onAddTransaction }: NewTransactionFormProps) => {
   const [formData, setFormData] = useState({
     type: "",
     amount: "",
@@ -43,8 +48,19 @@ const NewTransactionForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Connect to backend API
-    console.log("New transaction:", formData);
+    
+    // Create new transaction
+    const newTransaction = {
+      type: formData.type as "income" | "expense",
+      amount: parseFloat(formData.amount),
+      category: formData.category,
+      description: formData.description,
+      date: formData.date,
+    };
+    
+    // Add transaction via prop
+    onAddTransaction(newTransaction);
+    
     // Reset form
     setFormData({
       type: "",

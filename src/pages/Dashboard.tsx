@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import BalanceSummary from "@/components/Dashboard/BalanceSummary";
@@ -5,16 +6,28 @@ import ExpensePieChart from "@/components/Dashboard/ExpensePieChart";
 import TransactionHistory from "@/components/Dashboard/TransactionHistory";
 import NewTransactionForm from "@/components/Dashboard/NewTransactionForm";
 import userData from "@/data/user.json";
-import { UserData } from "@/types";
+import { UserData, Transaction } from "@/types";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const data = userData as UserData;
   
+  // State to manage transactions dynamically
+  const [transactions, setTransactions] = useState<Transaction[]>(data.transactions);
+  
   const handleLogout = () => {
     // TODO: Clear auth tokens/session
     console.log("Logging out...");
     navigate("/login");
+  };
+
+  const handleAddTransaction = (newTransaction: Omit<Transaction, 'id'>) => {
+    const maxId = transactions.length > 0 ? Math.max(...transactions.map(t => t.id)) : 0;
+    const transactionWithId: Transaction = {
+      ...newTransaction,
+      id: maxId + 1
+    };
+    setTransactions(prev => [...prev, transactionWithId]);
   };
 
   return (
@@ -37,21 +50,21 @@ const Dashboard = () => {
         {/* Balance Summary */}
         <section>
           <h2 className="text-xl font-semibold mb-4">Financial Overview</h2>
-          <BalanceSummary transactions={data.transactions} />
+          <BalanceSummary transactions={transactions} />
         </section>
 
         {/* Charts and Form Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Pie Chart */}
-          <ExpensePieChart transactions={data.transactions} />
+          <ExpensePieChart transactions={transactions} />
           
           {/* New Transaction Form */}
-          <NewTransactionForm />
+          <NewTransactionForm onAddTransaction={handleAddTransaction} />
         </div>
 
         {/* Transaction History */}
         <section>
-          <TransactionHistory transactions={data.transactions} />
+          <TransactionHistory transactions={transactions} />
         </section>
       </main>
     </div>
