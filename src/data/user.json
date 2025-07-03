@@ -1,0 +1,64 @@
+{
+  "user": {
+    "name": "Rohit",
+    "email": "rohit@example.com"
+  },
+  "transactions": [
+    {
+      "id": 1,
+      "type": "income",
+      "amount": 5000,
+      "category": "Salary",
+      "description": "Monthly salary",
+      "date": "2025-07-01"
+    },
+    {
+      "id": 2,
+      "type": "expense",
+      "amount": 1500,
+      "category": "Food",
+      "description": "Dinner with friends",
+      "date": "2025-07-02"
+    },
+    {
+      "id": 3,
+      "type": "income",
+      "amount": 1200,
+      "category": "Freelance",
+      "description": "Website project",
+      "date": "2025-07-03"
+    },
+    {
+      "id": 4,
+      "type": "expense",
+      "amount": 800,
+      "category": "Transport",
+      "description": "Monthly metro card",
+      "date": "2025-07-05"
+    },
+    {
+      "id": 5,
+      "type": "expense",
+      "amount": 350,
+      "category": "Entertainment",
+      "description": "Movie tickets",
+      "date": "2025-07-06"
+    },
+    {
+      "id": 6,
+      "type": "income",
+      "amount": 300,
+      "category": "Investment",
+      "description": "Dividend payout",
+      "date": "2025-07-08"
+    },
+    {
+      "id": 7,
+      "type": "expense",
+      "amount": 2000,
+      "category": "Shopping",
+      "description": "Clothes and accessories",
+      "date": "2025-07-10"
+    }
+  ]
+}
