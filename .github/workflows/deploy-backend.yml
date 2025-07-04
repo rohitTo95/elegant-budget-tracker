@@ -13,17 +13,59 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: Backend/package-lock.json
+
+      - name: Install dependencies and build locally
+        working-directory: ./Backend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Verify build
+        working-directory: ./Backend
+        run: |
+          if [ ! -f "dist/server.js" ]; then
+            echo "❌ Build failed - server.js not found in dist/"
+            exit 1
+          fi
+          echo "✅ Build verification passed"
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.0
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu/my-app/server
+            cd /home/ec2-user/elegant-budget-tracker/Backend
             git pull origin main
-            npm install
-            npm run build
-            pm2 restart server || node dist/server.js &
+            chmod +x deploy.sh
+            ./deploy.sh
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Wait for service to start
+            sleep 10
+            
+            # Health check
+            if curl -f http://localhost:5000/health > /dev/null 2>&1; then
+              echo "✅ Backend deployment verification successful"
+              echo "🚀 Backend is running at: http://localhost:5000"
+              echo "🏥 Health check: http://localhost:5000/health"
+            else
+              echo "❌ Backend deployment verification failed"
+              pm2 logs expense-tracker-backend --lines 20
+              exit 1
+            fi
