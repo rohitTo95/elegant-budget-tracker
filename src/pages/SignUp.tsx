@@ -1,16 +1,21 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import axios from "axios";
+import { useToast } from "@/context/ToastContext";
 
 const SignUp = () => {
+  const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -19,10 +24,34 @@ const SignUp = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Connect to backend API
-    console.log("Sign up data:", formData);
+    setIsLoading(true);
+    
+    try {
+      const response = await axios.post('/api/user/signup', formData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.data.success) {
+        showSuccess("Account Created Successfully", "Your account has been created! Please log in to continue.");
+        setTimeout(() => navigate("/login"), 2000);
+      } else {
+        showError("Signup Failed", response.data.message);
+      }
+    } catch (error: any) {
+      console.error("Error signing up:", error);
+      
+      if (error.response?.data?.message) {
+        showError("Signup Failed", error.response.data.message);
+      } else {
+        showError("Signup Error", error.message || 'An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -72,8 +101,8 @@ const SignUp = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
-              Create Account
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
           <div className="mt-6 text-center">

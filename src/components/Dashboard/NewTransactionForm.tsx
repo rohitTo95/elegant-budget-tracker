@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,11 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Transaction } from "@/types";
 
-interface NewTransactionFormProps {
-  onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
-}
+import { useTransactions } from "@/context/TransactionContext";
+import { useToast } from "@/context/ToastContext";
 
-const NewTransactionForm = ({ onAddTransaction }: NewTransactionFormProps) => {
+const NewTransactionForm = () => {
+  const { addTransaction } = useTransactions();
+  const { showSuccess, showError } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     type: "",
     amount: "",
@@ -46,29 +49,43 @@ const NewTransactionForm = ({ onAddTransaction }: NewTransactionFormProps) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    // Create new transaction
-    const newTransaction = {
-      type: formData.type as "income" | "expense",
-      amount: parseFloat(formData.amount),
-      category: formData.category,
-      description: formData.description,
-      date: formData.date,
-    };
-    
-    // Add transaction via prop
-    onAddTransaction(newTransaction);
-    
-    // Reset form
-    setFormData({
-      type: "",
-      amount: "",
-      category: "",
-      description: "",
-      date: "",
-    });
+    try {
+      const newTransaction = {
+        type: formData.type as "income" | "expense",
+        amount: parseFloat(formData.amount),
+        category: formData.category,
+        description: formData.description,
+        date: formData.date,
+      };
+      
+      await addTransaction(newTransaction);
+      
+      // Reset form
+      setFormData({
+        type: "",
+        amount: "",
+        category: "",
+        description: "",
+        date: "",
+      });
+      
+      showSuccess('Transaction Added', 'Your transaction has been successfully added to your records.');
+    } catch (error: any) {
+      console.error('Error adding transaction:', error);
+      
+      if (error.response?.status === 401) {
+        showError('Session Expired', 'Please login again to continue.');
+        window.location.href = '/login';
+      } else {
+        showError('Transaction Failed', error.response?.data?.message || 'Failed to add transaction. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const categories = formData.type === "income" ? incomeCategories : expenseCategories;
@@ -153,8 +170,8 @@ const NewTransactionForm = ({ onAddTransaction }: NewTransactionFormProps) => {
             />
           </div>
           
-          <Button type="submit" className="w-full">
-            Add Transaction
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Adding Transaction...' : 'Add Transaction'}
           </Button>
         </form>
       </CardContent>

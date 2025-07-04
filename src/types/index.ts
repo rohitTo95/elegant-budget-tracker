@@ -1,10 +1,13 @@
 export interface Transaction {
-  id: number;
+  _id: string;
+  userId: string;
   type: "income" | "expense";
   amount: number;
   category: string;
-  description: string;
+  description?: string;
   date: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface User {
