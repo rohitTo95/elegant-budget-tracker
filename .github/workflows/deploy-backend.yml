@@ -44,10 +44,14 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ec2-user/elegant-budget-tracker/Backend
+            if [ ! -d "elegant-budget-tracker" ]; then
+              git clone https://github.com/rohitTo95/elegant-budget-tracker.git
+            fi
+            cd elegant-budget-tracker/Backend
             git pull origin main
-            chmod +x deploy.sh
-            ./deploy.sh
+            npm install
+            npm run build
+            pm2 restart server || node dist/server.js &
 
       - name: Verify deployment
         uses: appleboy/ssh-action@v1.0.3
