@@ -1,29 +1,8 @@
-name: Deploy Backend 
+name: Deploy Backend to EC2
 
 on:
-  pus      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd /home/ec2-user/expense-tracker/Backend
-            git pull origin main
-            chmod +x deploy.sh
-            ./deploy.sh
-
-      - name: Verify deployment
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            # Final health check
-            sleep 10
-            curl -f http://localhost:5000/health || exit 1
-            echo "✅ Backend deployment verification successful"ches:
+  push:
+    branches:
       - main
     paths:
       - 'Backend/**'
@@ -33,32 +12,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'npm'
-          cache-dependency-path: Backend/package-lock.json
-
-      - name: Install dependencies
-        working-directory: ./Backend
-        run: npm ci
-
-      - name: Build backend
-        working-directory: ./Backend
-        run: npm run build
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ec2-user/expense-tracker/Backend
+            cd /home/ubuntu/my-app/server
             git pull origin main
-            chmod +x deploy.sh
-            ./deploy.sh
+            npm install
+            npm run build
+            pm2 restart server || node dist/server.js &
