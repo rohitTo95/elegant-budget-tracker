@@ -31,7 +31,12 @@ import { createTransaction, getUserTransactions, updateTransaction, deleteTransa
 //Middleware 
 import { authenticateToken, AuthenticatedRequest } from './src/middleware/jwt/authenticateToken';
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"],
+  origin: [
+    "http://localhost:3000", 
+    "http://localhost:3001", 
+    "http://localhost:5173",
+    process.env.FRONTEND_URL || "https://your-frontend-domain.com"
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -40,6 +45,25 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Health check endpoints
+app.get('/health', (req: Request, res: Response) => {
+  res.json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+app.get('/api/health', (req: Request, res: Response) => {
+  res.json({ 
+    message: 'API is running',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    status: 'healthy'
+  });
+});
 
 // auth
 app.post('/api/user/signup', async (req: Request, res: Response): Promise<any> => {
