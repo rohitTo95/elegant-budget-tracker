@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { signupUser, loginUser } from '../api/user';
 import jwt from 'jsonwebtoken';
-import { authenticateToken, AuthenticatedRequest } from '../middleware/jwt/authenticateToken';
+import { authenticateToken } from '../middleware/jwt/authenticateToken';
+import { AuthenticatedRequest } from '../types/express';
 
 const router = Router();
 

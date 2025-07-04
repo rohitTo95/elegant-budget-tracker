@@ -1,16 +1,20 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
-dotenv.config()
-export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    name: string;
-    email: string;
-  };
+
+dotenv.config();
+
+interface JWTPayload {
+  id: string;
+  name: string;
+  email: string;
+  createdAt?: string;
+  updatedAt?: string;
+  iat?: number;
+  exp?: number;
 }
 
-export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
   // Try to get token from Authorization header first, then from cookies
   const authHeader = req.headers['authorization'];
   let token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
@@ -33,11 +37,13 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as JWTPayload;
     req.user = {
       id: decoded.id,
       name: decoded.name,
-      email: decoded.email
+      email: decoded.email,
+      createdAt: decoded.createdAt ? new Date(decoded.createdAt) : new Date(),
+      updatedAt: decoded.updatedAt ? new Date(decoded.updatedAt) : new Date()
     };
     console.log('Token verified successfully for user:', decoded.name);
     next();

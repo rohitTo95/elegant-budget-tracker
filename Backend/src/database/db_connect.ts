@@ -26,7 +26,10 @@ const clientOptions: MongoDBClientOptions = {
 export const connectDB = async () => {
   try {
     await mongoose.connect(uri, clientOptions);
-    await mongoose.connection.db.admin().command({ ping: 1 });
+    
+    // Ping to confirm connection
+    await mongoose.connection.db?.admin().command({ ping: 1 });
+    
     console.log(`✅ Successfully connected to MongoDB!`);
     console.log(`📄 Database: ${mongoose.connection.name}`);
     console.log(`🔗 Host: ${mongoose.connection.host}`);

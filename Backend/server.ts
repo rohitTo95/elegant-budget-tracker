@@ -5,22 +5,6 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// Extend Express Request interface to include user property
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-        name: string;
-        email: string;
-        createdAt: Date;
-        updatedAt: Date;
-      };
-    }
-  }
-}
-
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -29,7 +13,8 @@ import { signupUser, loginUser } from './src/api/user';
 import { createTransaction, getUserTransactions, updateTransaction, deleteTransaction } from './src/api/transaction';
 
 //Middleware 
-import { authenticateToken, AuthenticatedRequest } from './src/middleware/jwt/authenticateToken';
+import { authenticateToken } from './src/middleware/jwt/authenticateToken';
+import { AuthenticatedRequest } from './src/types/express';
 app.use(cors({
   origin: [
     "http://localhost:3000", 
