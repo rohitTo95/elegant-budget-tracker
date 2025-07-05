@@ -17,7 +17,7 @@ import { AuthenticatedRequest } from './src/types/express';
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000',
-    'http://firstreacttest123235.s3-website.ap-south-1.amazonaws.com',
+    'http://expencetracker9993.s3-website.ap-south-1.amazonaws.com/',
     'http://13.233.29.88:3000', // Local development with backend IP
     'http://localhost:3000' // Local development
   ],
