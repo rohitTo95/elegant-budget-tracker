@@ -22,15 +22,16 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
   // If no token in header, try to get it from cookies
   if (!token && req.cookies && req.cookies.token) {
     token = req.cookies.token;
-    console.log('Token found in cookies');
+    console.log('Token found in cookies:', token ? `${token.substring(0, 20)}...` : 'empty');
   } else if (token) {
     console.log('Token found in Authorization header');
   }
 
-  if (!token) {
-    console.log('No token found in request');
+  // Check if token exists and is not empty
+  if (!token || token.trim() === '') {
+    console.log('Authentication failed: No token provided');
     res.status(401).json({
-      message: 'Access token required',
+      message: 'Access token required - please login',
       error: 'NO_TOKEN'
     });
     return;
@@ -50,7 +51,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
   } catch (error) {
     console.log('Token verification failed:', error);
     res.status(403).json({
-      message: 'Invalid or expired token',
+      message: 'Invalid or expired token - please login again',
       error: 'INVALID_TOKEN'
     });
     return;

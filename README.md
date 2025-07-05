@@ -199,6 +199,7 @@ VITE_API_URL=http://localhost:5000
 ### Authentication
 - `POST /api/user/signup` - Register a new user
 - `POST /api/user/login` - Login user
+- `POST /api/user/logout` - Logout user (clears HTTP-only cookie)
 - `GET /api/auth/check` - Check authentication status
 
 ### Transactions

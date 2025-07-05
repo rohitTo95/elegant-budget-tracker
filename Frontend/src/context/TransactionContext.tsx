@@ -23,6 +23,7 @@ interface TransactionContextType {
   updateTransaction: (id: string, transaction: Partial<Omit<Transaction, '_id' | 'userId' | 'createdAt' | 'updatedAt'>>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   refreshTransactions: () => Promise<void>;
+  clearTransactions: () => void;
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
@@ -125,6 +126,12 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
     await fetchTransactions();
   };
 
+  const clearTransactions = () => {
+    setTransactions([]);
+    setError(null);
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (!authLoading) {
       if (isAuthenticated) {
@@ -144,7 +151,8 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
     addTransaction,
     updateTransaction,
     deleteTransaction,
-    refreshTransactions
+    refreshTransactions,
+    clearTransactions
   };
 
   return (

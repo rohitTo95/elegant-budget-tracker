@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import BalanceSummary from "@/components/Dashboard/BalanceSummary";
 import ExpensePieChart from "@/components/Dashboard/ExpensePieChart";
@@ -6,18 +7,30 @@ import TransactionHistory from "@/components/Dashboard/TransactionHistory";
 import NewTransactionForm from "@/components/Dashboard/NewTransactionForm";
 import { useTransactions } from "@/context/TransactionContext";
 import { useAuth } from "@/context/AuthContext";
+import { useLogout } from "@/hooks/use-logout";
 import { useToast } from "@/context/ToastContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { userName, logout } = useAuth();
+  const { userName } = useAuth();
   const { transactions, loading } = useTransactions();
+  const logout = useLogout();
   const { showSuccess } = useToast();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    showSuccess("Logged out successfully", "You have been securely logged out. See you again soon!");
-    setTimeout(() => navigate("/login"), 1000);
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      showSuccess("Logged out successfully", "You have been securely logged out. See you again soon!");
+      setTimeout(() => navigate("/login"), 1000);
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if logout fails, redirect to login
+      navigate("/login");
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   if (loading) {
@@ -37,8 +50,8 @@ const Dashboard = () => {
             <h1 className="text-2xl font-bold">Expense Tracker</h1>
             <p className="text-muted-foreground">Welcome back, {userName}!</p>
           </div>
-          <Button variant="outline" onClick={handleLogout}>
-            Logout
+          <Button variant="outline" onClick={handleLogout} disabled={isLoggingOut}>
+            {isLoggingOut ? "Logging out..." : "Logout"}
           </Button>
         </div>
       </header>

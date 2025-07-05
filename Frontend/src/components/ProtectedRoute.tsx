@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -13,6 +13,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAuth = true 
 }) => {
   const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
 
   // Show loading screen while checking authentication
   if (isLoading) {
@@ -21,8 +22,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         <div className="text-center space-y-4">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent border-solid rounded-full animate-spin mx-auto"></div>
           <div className="space-y-2">
-            <div className="text-xl font-semibold text-gray-700">Checking authentication...</div>
-            <div className="text-sm text-gray-500">Please wait while we verify your session</div>
+            <div className="text-xl font-semibold text-gray-700">Verifying token...</div>
+            <div className="text-sm text-gray-500">Please wait while we validate your authentication</div>
           </div>
         </div>
       </div>
@@ -31,11 +32,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // If route requires authentication and user is not authenticated
   if (requireAuth && !isAuthenticated) {
+    console.log('User not authenticated, redirecting to login');
     return <Navigate to={redirectTo} replace />;
   }
 
   // If route requires no authentication (login/signup pages) and user is authenticated
   if (!requireAuth && isAuthenticated) {
+    console.log('User already authenticated, redirecting to dashboard');
     return <Navigate to="/dashboard" replace />;
   }
 

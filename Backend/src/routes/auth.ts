@@ -63,6 +63,7 @@ router.post('/login', async (req, res): Promise<any> => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
+      path: '/', // Explicitly set path to root
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     });
 
@@ -75,6 +76,31 @@ router.post('/login', async (req, res): Promise<any> => {
     console.error('Error logging in user:', error);
     res.status(500).json({
       message: 'Internal server error',
+      error: 'SERVER_ERROR'
+    });
+  }
+});
+
+// Logout endpoint
+router.post('/logout', async (req, res): Promise<any> => {
+  try {
+    // Overwrite the HTTP-only cookie with empty value and immediate expiration
+    res.cookie('token', '*', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 0 // Expire immediately
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  } catch (error) {
+    console.error('Error during logout:', error);
+    res.status(500).json({
+      message: 'Internal server error during logout',
       error: 'SERVER_ERROR'
     });
   }
