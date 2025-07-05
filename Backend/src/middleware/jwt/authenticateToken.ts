@@ -15,15 +15,11 @@ interface JWTPayload {
 }
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
-  // Try to get token from Authorization header first, then from cookies
+  // Get token from Authorization header only (Bearer TOKEN)
   const authHeader = req.headers['authorization'];
-  let token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
   
-  // If no token in header, try to get it from cookies
-  if (!token && req.cookies && req.cookies.token) {
-    token = req.cookies.token;
-    console.log('Token found in cookies:', token ? `${token.substring(0, 20)}...` : 'empty');
-  } else if (token) {
+  if (token) {
     console.log('Token found in Authorization header');
   }
 

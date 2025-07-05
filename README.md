@@ -19,12 +19,13 @@
 ## 🌟 Features
 
 - ✨ **Modern UI**: Beautiful, responsive design with Tailwind CSS and Radix UI components
-- 🔐 **Secure Authentication**: JWT-based authentication with HTTP-only cookies
+- 🔐 **Secure Authentication**: JWT-based authentication with localStorage token storage
 - 📊 **Transaction Management**: Create, read, update, and delete transactions
 - 📈 **Visual Analytics**: Interactive charts and financial summaries
 - 🏗️ **Type-Safe**: Built entirely with TypeScript for better developer experience
 - 🚀 **Production Ready**: Includes Docker support and CI/CD pipeline
 - 📱 **Mobile Responsive**: Works perfectly on all device sizes
+- 🌐 **Cross-Origin Friendly**: No cookie-related CORS issues in production
 
 ## 🏗️ Architecture
 
@@ -43,7 +44,7 @@
     ┌─────────┐            ┌─────────┐            ┌─────────┐
     │ Tailwind│            │   JWT   │            │Mongoose │
     │   CSS   │            │  Auth   │            │   ODM   │
-    │ Radix UI│            │ Cookie  │            │ Models  │
+    │ Radix UI│            │localStorage│          │ Models  │
     └─────────┘            └─────────┘            └─────────┘
 ```
 
@@ -197,10 +198,10 @@ VITE_API_URL=http://localhost:5000
 ## 📡 API Endpoints
 
 ### Authentication
-- `POST /api/user/signup` - Register a new user
-- `POST /api/user/login` - Login user
-- `POST /api/user/logout` - Logout user (clears HTTP-only cookie)
-- `GET /api/auth/check` - Check authentication status
+- `POST /api/auth/signup` - Register a new user
+- `POST /api/auth/login` - Login user (returns JWT token for localStorage)
+- `POST /api/auth/logout` - Logout user (frontend clears localStorage)
+- `GET /api/auth/check` - Check authentication status (requires Bearer token)
 
 ### Transactions
 - `GET /api/transactions` - Get user's transactions

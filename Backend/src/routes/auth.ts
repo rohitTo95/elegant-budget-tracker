@@ -59,15 +59,6 @@ router.post('/login', async (req, res): Promise<any> => {
       expiresIn: '30d'
     });
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: false,
-      // secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/', // Explicitly set path to root
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    });
-
     res.status(200).json({
       message: result.message,
       user: response,
@@ -85,15 +76,8 @@ router.post('/login', async (req, res): Promise<any> => {
 // Logout endpoint
 router.post('/logout', async (req, res): Promise<any> => {
   try {
-    // Overwrite the HTTP-only cookie with empty value and immediate expiration
-    res.cookie('token', '*', {
-      httpOnly: true,
-      secure: false, // Set to true in production
-      sameSite: 'strict',
-      path: '/',
-      maxAge: 0 // Expire immediately
-    });
-
+    // For localStorage approach, we don't need to clear any server-side cookies
+    // The frontend will handle token removal from localStorage
     res.status(200).json({
       success: true,
       message: 'Logged out successfully'

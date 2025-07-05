@@ -26,10 +26,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await axios.post('/api/auth/login', { email, password });
 
       if (response.data.user && response.data.token) {
+        // Store token in localStorage
+        localStorage.setItem('token', response.data.token);
+        
         setUserName(response.data.user.name);
         setIsAuthenticated(true);
-        console.log('Login successful - token received for user:', response.data.user.name);
-        console.log('Token will be automatically handled by httpOnly cookie');
+        console.log('Login successful - token stored in localStorage for user:', response.data.user.name);
       } else {
         throw new Error('Invalid response format from server');
       }
@@ -37,39 +39,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Login failed:', error);
       setIsAuthenticated(false);
       setUserName(null);
+      // Clear token from localStorage on login failure
+      localStorage.removeItem('token');
       throw error;
     }
   };
 
   const logout = async () => {
     try {
-      console.log('Initiating logout - invalidating token...');
-      // Call the logout endpoint to invalidate the httpOnly cookie on server side
+      console.log('Initiating logout...');
+      // Call the logout endpoint (optional for localStorage approach)
       const response = await axios.post('/api/auth/logout');
       
       console.log('Server logout successful:', response.data);
+      
+      // Clear token from localStorage
+      localStorage.removeItem('token');
       
       // Clear local authentication state
       setUserName(null);
       setIsAuthenticated(false);
       
-      console.log('Logout completed - token invalidated and local state cleared');
+      console.log('Logout completed - token removed from localStorage and local state cleared');
     } catch (error) {
       console.error('Error during server logout:', error);
       
       // Even if server logout fails, clear local state and token
+      localStorage.removeItem('token');
       setUserName(null);
       setIsAuthenticated(false);
       
-      // Force clear the token cookie
-      document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       console.log('Local logout completed despite server error');
     }
   };
 
   const checkAuth = async () => {
     try {
-      console.log('Checking authentication token...');
+      // Check if token exists in localStorage
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('No token found in localStorage');
+        setIsAuthenticated(false);
+        setUserName(null);
+        return;
+      }
+
+      console.log('Checking authentication token from localStorage...');
       const response = await axios.get('/api/auth/check');
 
       if (response.data.success && response.data.user) {
@@ -79,6 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         setIsAuthenticated(false);
         setUserName(null);
+        localStorage.removeItem('token');
         console.log('Token validation failed - invalid token');
       }
     } catch (error: any) {
@@ -89,8 +105,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // If it's a 401 or 403 error, the token is invalid/expired
       if (error.response?.status === 401 || error.response?.status === 403) {
         console.log('Token expired or invalid, clearing authentication state');
-        // Clear any existing token cookies
-        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        // Clear token from localStorage
+        localStorage.removeItem('token');
       }
     }
   };

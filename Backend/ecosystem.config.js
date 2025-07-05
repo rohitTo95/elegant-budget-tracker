@@ -13,7 +13,7 @@ module.exports = {
       env_production: {
         NODE_ENV: 'production',
         PORT: 5000,
-        FRONTEND_URL: 'https://your-frontend-domain.com'
+        FRONTEND_URL: 'http://13.233.29.88:3000'
       },
       log_file: './logs/combined.log',
       out_file: './logs/out.log',

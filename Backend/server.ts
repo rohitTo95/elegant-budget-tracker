@@ -1,7 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
-import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -19,12 +18,11 @@ app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000'
   ],
-  credentials: true,
+  credentials: false, // No longer need credentials for localStorage approach
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -102,14 +100,6 @@ app.post('/api/auth/login', async (req: Request, res: Response): Promise<any> =>
     const token = jwt.sign(response, process.env.JWT_SECRET || 'secret', {
       expiresIn: '30d'
     });
-   
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure:false,
-      sameSite: 'strict',
-      path: '/', // Explicitly set path to root
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    });
 
     res.status(200).json({
       message: result.message,
@@ -128,15 +118,8 @@ app.post('/api/auth/login', async (req: Request, res: Response): Promise<any> =>
 // Logout endpoint
 app.post('/api/auth/logout', async (req: Request, res: Response): Promise<any> => {
   try {
-    // Overwrite the HTTP-only cookie with empty value and immediate expiration
-    res.cookie('token', '*', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/',
-      maxAge: 0 // Expire immediately
-    });
-
+    // For localStorage approach, we don't need to clear any server-side cookies
+    // The frontend will handle token removal from localStorage
     res.status(200).json({
       success: true,
       message: 'Logged out successfully'

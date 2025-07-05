@@ -12,7 +12,7 @@ export const useLogout = ():any=> {
 
   const logout = async () => {
     try {
-      // First logout from auth (this calls the backend)
+      // First logout from auth (this calls the backend and clears localStorage)
       await authLogout();
       
       // Clear transaction data from local state
@@ -26,6 +26,7 @@ export const useLogout = ():any=> {
       console.error('Error during complete logout:', error);
       
       // Even if auth logout fails, clear local data
+      localStorage.removeItem('token');
       clearTransactions();
       localStorage.removeItem('sidebar:state');
       

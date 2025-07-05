@@ -5,14 +5,22 @@ const baseURL = import.meta.env.VITE_BACKEND_URL;
 
 const axiosInstance = axios.create({
   baseURL,
-  withCredentials: true,
+  withCredentials: false, // No longer need credentials for localStorage approach
   timeout: 10000,
 });
 
-// Add request interceptor for debugging
+// Add request interceptor to include Authorization header with token from localStorage
 axiosInstance.interceptors.request.use(
   (config) => {
     console.log(`Making ${config.method?.toUpperCase()} request to: ${config.baseURL}${config.url}`);
+    
+    // Get token from localStorage and add to Authorization header
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log('Authorization header added with token');
+    }
+    
     return config;
   },
   (error) => {
@@ -28,8 +36,8 @@ axiosInstance.interceptors.response.use(
       // Token is invalid, expired, or missing
       console.error('Authentication failed - token invalid or expired');
       
-      // Clear any local token cookies
-      document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      // Clear token from localStorage
+      localStorage.removeItem('token');
       
       // Only redirect if we're not already on login/signup pages
       const currentPath = window.location.pathname;
