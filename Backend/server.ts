@@ -52,7 +52,7 @@ app.get('/api/health', (req: Request, res: Response) => {
 });
 
 // auth
-app.post('/api/user/signup', async (req: Request, res: Response): Promise<any> => {
+app.post('/api/auth/signup', async (req: Request, res: Response): Promise<any> => {
   const { name, email, password } = req.body;
 
   try {
@@ -78,7 +78,7 @@ app.post('/api/user/signup', async (req: Request, res: Response): Promise<any> =
   }
 });
 
-app.post('/api/user/login', async (req: Request, res: Response): Promise<any> => {
+app.post('/api/auth/login', async (req: Request, res: Response): Promise<any> => {
   const { email, password } = req.body;
 
   try {
@@ -126,7 +126,7 @@ app.post('/api/user/login', async (req: Request, res: Response): Promise<any> =>
 });
 
 // Logout endpoint
-app.post('/api/user/logout', async (req: Request, res: Response): Promise<any> => {
+app.post('/api/auth/logout', async (req: Request, res: Response): Promise<any> => {
   try {
     // Overwrite the HTTP-only cookie with empty value and immediate expiration
     res.cookie('token', '*', {
