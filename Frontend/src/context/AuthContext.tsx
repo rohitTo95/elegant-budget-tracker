@@ -26,12 +26,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await axios.post('/api/auth/login', { email, password });
 
       if (response.data.user && response.data.token) {
-        // Store token in localStorage
+        // Store token and username in localStorage
         localStorage.setItem('token', response.data.token);
+        localStorage.setItem('username', response.data.user.name);
         
         setUserName(response.data.user.name);
         setIsAuthenticated(true);
-        console.log('Login successful - token stored in localStorage for user:', response.data.user.name);
+        console.log('Login successful - token and username stored in localStorage for user:', response.data.user.name);
       } else {
         throw new Error('Invalid response format from server');
       }
@@ -39,8 +40,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Login failed:', error);
       setIsAuthenticated(false);
       setUserName(null);
-      // Clear token from localStorage on login failure
+      // Clear token and username from localStorage on login failure
       localStorage.removeItem('token');
+      localStorage.removeItem('username');
       throw error;
     }
   };
@@ -53,19 +55,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       console.log('Server logout successful:', response.data);
       
-      // Clear token from localStorage
+      // Clear token and username from localStorage
       localStorage.removeItem('token');
+      localStorage.removeItem('username');
       
       // Clear local authentication state
       setUserName(null);
       setIsAuthenticated(false);
       
-      console.log('Logout completed - token removed from localStorage and local state cleared');
+      console.log('Logout completed - token and username removed from localStorage and local state cleared');
     } catch (error) {
       console.error('Error during server logout:', error);
       
       // Even if server logout fails, clear local state and token
       localStorage.removeItem('token');
+      localStorage.removeItem('username');
       setUserName(null);
       setIsAuthenticated(false);
       
@@ -77,24 +81,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       // Check if token exists in localStorage
       const token = localStorage.getItem('token');
+      const storedUsername = localStorage.getItem('username');
+      
       if (!token) {
         console.log('No token found in localStorage');
         setIsAuthenticated(false);
         setUserName(null);
+        // Also clear username if token doesn't exist
+        if (storedUsername) {
+          localStorage.removeItem('username');
+        }
         return;
+      }
+
+      // If we have both token and username in localStorage, restore them first
+      if (storedUsername) {
+        setUserName(storedUsername);
+        console.log('Username restored from localStorage:', storedUsername);
       }
 
       console.log('Checking authentication token from localStorage...');
       const response = await axios.get('/api/auth/check');
 
       if (response.data.success && response.data.user) {
+        // Update username in state and localStorage (in case it changed on server)
         setUserName(response.data.user.name);
+        localStorage.setItem('username', response.data.user.name);
         setIsAuthenticated(true);
         console.log('Token validated successfully for user:', response.data.user.name);
       } else {
         setIsAuthenticated(false);
         setUserName(null);
         localStorage.removeItem('token');
+        localStorage.removeItem('username');
         console.log('Token validation failed - invalid token');
       }
     } catch (error: any) {
@@ -105,8 +124,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // If it's a 401 or 403 error, the token is invalid/expired
       if (error.response?.status === 401 || error.response?.status === 403) {
         console.log('Token expired or invalid, clearing authentication state');
-        // Clear token from localStorage
+        // Clear token and username from localStorage
         localStorage.removeItem('token');
+        localStorage.removeItem('username');
       }
     }
   };

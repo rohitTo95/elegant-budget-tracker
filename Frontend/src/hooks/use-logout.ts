@@ -27,6 +27,7 @@ export const useLogout = ():any=> {
       
       // Even if auth logout fails, clear local data
       localStorage.removeItem('token');
+      localStorage.removeItem('username');
       clearTransactions();
       localStorage.removeItem('sidebar:state');
       
