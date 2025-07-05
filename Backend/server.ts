@@ -33,24 +33,6 @@ app.get('/', (req: Request, res: Response) => {
   res.send('API SERVER IS READY!');
 });
 
-// Health check endpoints
-app.get('/health', (req: Request, res: Response) => {
-  res.json({ 
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-
-app.get('/api/health', (req: Request, res: Response) => {
-  res.json({ 
-    message: 'API is running',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    status: 'healthy'
-  });
-});
 
 // auth
 app.post('/api/auth/signup', async (req: Request, res: Response): Promise<any> => {
