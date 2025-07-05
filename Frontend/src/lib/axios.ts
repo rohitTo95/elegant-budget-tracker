@@ -5,7 +5,7 @@ const baseURL = import.meta.env.VITE_BACKEND_URL;
 
 const axiosInstance = axios.create({
   baseURL,
-  withCredentials: true, // No longer need credentials for localStorage approach
+  withCredentials: false, // No longer need credentials for localStorage approach
   timeout: 10000,
 });
 
