@@ -17,8 +17,8 @@ import { AuthenticatedRequest } from './src/types/express';
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000',
-    'http://expencetracker9993.s3-website.ap-south-1.amazonaws.com/',
-    'http://13.233.29.88:3000', // Local development with backend IP
+    'http://expencetracker9993.s3-website.ap-south-1.amazonaws.com',
+    'http://13.204.100.131:3000', // Local development with backend IP
     'http://localhost:3000' // Local development
   ],
   credentials: false, // No longer need credentials for localStorage approach

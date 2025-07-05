@@ -278,7 +278,7 @@ PORT=5000
 NODE_ENV=production
 
 # CORS Configuration (AWS S3 Frontend)
-FRONTEND_URL=http://firstreacttest123235.s3-website.ap-south-1.amazonaws.com
+FRONTEND_URL=http://expencetracker9993.s3-website.ap-south-1.amazonaws.com/
 ```
 
 ### Frontend (.env)
@@ -349,7 +349,7 @@ chmod +x test-localStorage-auth.sh
 ./test-localStorage-auth.sh
 
 # Test CORS configuration
-curl -H "Origin: http://firstreacttest123235.s3-website.ap-south-1.amazonaws.com" \
+curl -H "Origin: http://http://expencetracker9993.s3-website.ap-south-1.amazonaws.com" \
      -H "Access-Control-Request-Method: POST" \
      -H "Access-Control-Request-Headers: X-Requested-With,Content-Type,Authorization" \
      -X OPTIONS http://13.233.29.88/api/auth/login
