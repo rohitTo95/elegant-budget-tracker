@@ -51,7 +51,7 @@ jobs:
             git pull origin main
             npm install
             npm run build
-            pm2 restart server || node dist/server.js &
+            pm2 restart expense-tracker-backend || pm2 start dist/server.js --name expense-tracker-backend
 
       - name: Verify deployment
         uses: appleboy/ssh-action@v1.0.3
