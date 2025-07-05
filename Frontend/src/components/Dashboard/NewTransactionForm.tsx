@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '@/lib/axios';
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

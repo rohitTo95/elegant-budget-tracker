@@ -19,7 +19,7 @@ export default defineConfig({
     proxy: {
       // Proxy API calls during dev to Express backend
       '/api': {
-        target: process.env.VITE_BACKEND_URL || 'http://localhost:5000',
+        target: process.env.VITE_API_URL || 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
         // Remove redundant rewrite rule since we're keeping the /api prefix
