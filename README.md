@@ -278,7 +278,7 @@ PORT=5000
 NODE_ENV=production
 
 # CORS Configuration (AWS S3 Frontend)
-FRONTEND_URL=http://expencetracker9993.s3-website.ap-south-1.amazonaws.com/
+FRONTEND_URL=http://expencetracker9993.s3-website.ap-south-1.amazonaws.com
 ```
 
 ### Frontend (.env)
@@ -292,7 +292,7 @@ VITE_BACKEND_URL=http://localhost:5000
 
 ```env
 # API Configuration (Production via nginx)
-VITE_BACKEND_URL=http://13.233.29.88
+VITE_BACKEND_URL=http://13.204.100.131
 ```
 
 ## 📡 API Endpoints
@@ -330,6 +330,21 @@ Content-Type: application/json
 }
 ```
 
+## 🌐 Current Deployment
+
+### Production URLs (Updated)
+- **Frontend**: http://expencetracker9993.s3-website.ap-south-1.amazonaws.com
+- **Backend**: http://13.204.100.131 (via nginx reverse proxy)
+- **API Base**: http://13.204.100.131/api
+- **Health Check**: http://13.204.100.131/health
+
+### Architecture Summary
+- **Frontend**: React build deployed on AWS S3 static hosting
+- **Backend**: Node.js Express server on AWS EC2 Ubuntu instance
+- **Proxy**: nginx reverse proxy handling CORS and routing
+- **Database**: MongoDB (Atlas or local instance)
+- **Authentication**: JWT tokens stored in localStorage (no cookie CORS issues)
+
 ## 🧪 Testing
 
 ```bash
@@ -349,10 +364,10 @@ chmod +x test-localStorage-auth.sh
 ./test-localStorage-auth.sh
 
 # Test CORS configuration
-curl -H "Origin: http://http://expencetracker9993.s3-website.ap-south-1.amazonaws.com" \
+curl -H "Origin: http://expencetracker9993.s3-website.ap-south-1.amazonaws.com" \
      -H "Access-Control-Request-Method: POST" \
      -H "Access-Control-Request-Headers: X-Requested-With,Content-Type,Authorization" \
-     -X OPTIONS http://13.233.29.88/api/auth/login
+     -X OPTIONS http://13.204.100.131/api/auth/login
 ```
 
 ## 🐳 Docker Support
@@ -383,7 +398,7 @@ The project includes a production-ready nginx configuration (`nginx-expense-trac
 ```nginx
 server {
     listen 80;
-    server_name 13.233.29.88;
+    server_name 13.204.100.131;
 
     # Proxy API requests to Node.js backend
     location /api {
@@ -440,8 +455,8 @@ cd Frontend
 npm run build
 
 # Deploy to S3 (using AWS CLI)
-aws s3 sync dist/ s3://firstreacttest123235 --delete
-aws s3 website s3://firstreacttest123235 --index-document index.html --error-document index.html
+aws s3 sync dist/ s3://expencetracker9993 --delete
+aws s3 website s3://expencetracker9993 --index-document index.html --error-document index.html
 ```
 
 ### GitHub Actions CI/CD
@@ -452,7 +467,7 @@ The project includes automated deployment workflows:
 2. **Frontend Deployment**: `.github/workflows/deploy-frontend.yml`
 
 Required GitHub Secrets:
-- `EC2_HOST` - Your EC2 instance IP (e.g., 13.233.29.88)
+- `EC2_HOST` - Your EC2 instance IP (e.g., 13.204.100.131)
 - `EC2_USER` - EC2 username (usually 'ubuntu')
 - `EC2_SSH_KEY` - Your private SSH key
 - `AWS_ACCESS_KEY_ID` - AWS access key for S3 deployment
@@ -576,10 +591,10 @@ sudo tail -f /var/log/nginx/error.log
 
 3. **Test CORS preflight**:
 ```bash
-curl -H "Origin: http://your-s3-website.amazonaws.com" \
+curl -H "Origin: http://expencetracker9993.s3-website.ap-south-1.amazonaws.com" \
      -H "Access-Control-Request-Method: POST" \
      -H "Access-Control-Request-Headers: Content-Type,Authorization" \
-     -X OPTIONS http://your-ec2-ip/api/auth/login
+     -X OPTIONS http://13.204.100.131/api/auth/login
 ```
 
 #### Authentication Issues
@@ -604,7 +619,7 @@ sudo tail -f /var/log/nginx/error.log
 
 # Test API endpoints
 curl -X GET http://localhost:5000/health
-curl -X GET http://your-ec2-ip/api/health
+curl -X GET http://13.204.100.131/api/health
 
 # Check process status
 pm2 status
