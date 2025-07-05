@@ -88,7 +88,7 @@ router.post('/logout', async (req, res): Promise<any> => {
     // Overwrite the HTTP-only cookie with empty value and immediate expiration
     res.cookie('token', '*', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Set to true in production
       sameSite: 'strict',
       path: '/',
       maxAge: 0 // Expire immediately
