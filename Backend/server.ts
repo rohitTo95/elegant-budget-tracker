@@ -12,10 +12,6 @@ import { connectDB } from './src/database/db_connect';
 import { signupUser, loginUser } from './src/api/user';
 import { createTransaction, getUserTransactions, updateTransaction, deleteTransaction } from './src/api/transaction';
 
-// Route imports
-import authRoutes from './src/routes/auth';
-import transactionRoutes from './src/routes/transactions';
-
 //Middleware 
 import { authenticateToken } from './src/middleware/jwt/authenticateToken';
 import { AuthenticatedRequest } from './src/types/express';
@@ -31,10 +27,6 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Mount routes
-app.use('/api/auth', authRoutes);
-app.use('/api/transactions', transactionRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to the Elegant Budget Tracker API :) !');
@@ -59,7 +51,104 @@ app.get('/api/health', (req: Request, res: Response) => {
   });
 });
 
-// Transaction endpoints (these will be moved to routes later)
+// auth
+app.post('/api/user/signup', async (req: Request, res: Response): Promise<any> => {
+  const { name, email, password } = req.body;
+
+  try {
+    const result = await signupUser(name, email, password);
+
+    if (!result.success) {
+      return res.status(400).json({
+        message: result.message,
+        error: result.error
+      });
+    }
+
+    res.status(201).json({
+      message: result.message,
+      success: true
+    });
+  } catch (error) {
+    console.error('Error creating user:', error);
+    res.status(500).json({
+      message: 'Internal server error',
+      error: 'SERVER_ERROR'
+    });
+  }
+});
+
+app.post('/api/user/login', async (req: Request, res: Response): Promise<any> => {
+  const { email, password } = req.body;
+
+  try {
+    const result = await loginUser(email, password);
+
+    if (!result.success) {
+      return res.status(401).json({
+        message: result.message,
+        error: result.error
+      });
+    }
+
+    const response = {
+      id: result.user?._id,
+      name: result.user?.name,
+      email: result.user?.email,
+      createdAt: result.user?.createdAt,
+      updatedAt: result.user?.updatedAt
+    };
+
+    const token = jwt.sign(response, process.env.JWT_SECRET || 'secret', {
+      expiresIn: '30d'
+    });
+   
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure:false,
+      sameSite: 'strict',
+      path: '/', // Explicitly set path to root
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+
+    res.status(200).json({
+      message: result.message,
+      user: response,
+      token
+    });
+  } catch (error) {
+    console.error('Error logging in user:', error);
+    res.status(500).json({
+      message: 'Internal server error',
+      error: 'SERVER_ERROR'
+    });
+  }
+});
+
+// Logout endpoint
+app.post('/api/user/logout', async (req: Request, res: Response): Promise<any> => {
+  try {
+    // Overwrite the HTTP-only cookie with empty value and immediate expiration
+    res.cookie('token', '*', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 0 // Expire immediately
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  } catch (error) {
+    console.error('Error during logout:', error);
+    res.status(500).json({
+      message: 'Internal server error during logout',
+      error: 'SERVER_ERROR'
+    });
+  }
+});
 
 // Transactions
 app.post('/api/transaction/create', authenticateToken, async (req: Request, res: Response): Promise<any> => {
@@ -252,6 +341,34 @@ app.delete('/api/transaction/:id', authenticateToken, async (req: AuthenticatedR
     return res.status(500).json({
       message: "Failed to delete transaction",
       error: 'SERVER_ERROR'
+    });
+  }
+});
+
+// Check authentication status
+app.get('/api/auth/check', authenticateToken, async (req: AuthenticatedRequest, res: Response): Promise<any> => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authenticated'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    console.error('Error checking authentication:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error'
     });
   }
 });

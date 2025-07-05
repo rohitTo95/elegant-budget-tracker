@@ -35,7 +35,7 @@ router.post('/signup', async (req, res): Promise<any> => {
 
 // User login
 router.post('/login', async (req, res): Promise<any> => {
-  const { email, password } = req.body;
+    const { email, password } = req.body;
 
   try {
     const result = await loginUser(email, password);
