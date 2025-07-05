@@ -16,15 +16,7 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    proxy: {
-      // Proxy API calls during dev to Express backend
-      '/api': {
-        target: process.env.VITE_API_URL || 'http://localhost:5000',
-        changeOrigin: true,
-        secure: false,
-        // Remove redundant rewrite rule since we're keeping the /api prefix
-      },
-    },
+    // Removed proxy configuration since we're using VITE_API_URL in axios configuration
   },
 });
 
