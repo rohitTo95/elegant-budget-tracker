@@ -31,9 +31,8 @@
 - ⚡ **High Performance**: nginx load balancing and optimized API endpoints
 - 🔒 **Security Focused**: JWT tokens, password hashing, and secure headers
 - 📦 **CI/CD Pipeline**: Automated testing and deployment workflows
-- 🐳 **Docker Support**: Containerized deployment for scalability
 
-## 🏗️ Production Architecture
+## 🏗️ Architecture
 
 ### Development Environment
 ```
@@ -53,13 +52,13 @@
         ▼
 ┌─────────────────┐
 │   AWS S3 Bucket │  ◄── Static Frontend Hosting
-│   React Build   │      (S3 Website Endpoint)
+│   React Build   │      (expencetracker9993)
 │                 │
 └─────────┬───────┘
           │ HTTPS/HTTP Requests
           ▼
 ┌─────────────────┐
-│   AWS EC2       │
+│   AWS EC2       │  ◄── Backend Server (13.204.100.131)
 │   Ubuntu Server │
 │                 │
 │  ┌─────────────┐│
@@ -92,7 +91,7 @@
 └──────┬──────┘    └─────────────┘    └──────┬──────┘    └─────────────┘
        │                                     │
        │ 1. Login Request                    │ 2. JWT Token Response
-       │ (username/password)                 │ (stored in localStorage)
+       │ (email/password)                    │ (stored in localStorage)
        │                                     │
        │ 3. Subsequent Requests              │
        │ Authorization: Bearer <token>       │
@@ -111,52 +110,62 @@ elegant-budget-tracker/
 │   │   ├── 📁 database/        # Database configuration
 │   │   │   ├── db_connect.ts   # MongoDB connection
 │   │   │   └── 📁 models/      # Mongoose schemas
+│   │   │       ├── user.ts     # User model
+│   │   │       └── transactions.ts # Transaction model
 │   │   ├── 📁 middleware/      # Express middleware
-│   │   │   └── 📁 jwt/         # JWT authentication (localStorage-based)
-│   │   ├── 📁 routes/          # API route handlers
-│   │   │   ├── auth.ts         # Authentication endpoints
-│   │   │   └── transactions.ts # Transaction endpoints
+│   │   │   └── 📁 jwt/         # JWT authentication
+│   │   │       └── authenticateToken.ts # Token verification
+│   │   ├── 📁 routes/          # Route handlers (unused in current setup)
+│   │   │   ├── auth.ts         # Authentication routes
+│   │   │   └── transactions.ts # Transaction routes
 │   │   └── 📁 types/           # TypeScript definitions
-│   ├── server.ts               # Main server file with CORS config
+│   │       └── express.d.ts    # Express type extensions
+│   ├── server.ts               # Main server file with all routes
 │   ├── ecosystem.config.js     # PM2 process manager configuration
-│   ├── .env.production         # Production environment variables
-│   ├── package.json
-│   └── tsconfig.json
+│   ├── package.json            # Dependencies and scripts
+│   └── tsconfig.json           # TypeScript configuration
 │
 ├── 📁 Frontend/                # React Vite application
 │   ├── 📁 src/
 │   │   ├── 📁 components/      # React components
 │   │   │   ├── 📁 Dashboard/   # Dashboard-specific components
-│   │   │   └── 📁 ui/          # Reusable UI components (Radix)
+│   │   │   │   ├── BalanceSummary.tsx
+│   │   │   │   ├── ExpensePieChart.tsx
+│   │   │   │   ├── NewTransactionForm.tsx
+│   │   │   │   └── TransactionHistory.tsx
+│   │   │   ├── 📁 ui/          # Reusable UI components (Radix)
+│   │   │   ├── ErrorBoundary.tsx
+│   │   │   └── ProtectedRoute.tsx
 │   │   ├── 📁 context/         # React Context providers
 │   │   │   ├── AuthContext.tsx # localStorage-based auth context
 │   │   │   ├── ToastContext.tsx# Toast notifications
 │   │   │   └── TransactionContext.tsx # Transaction state
 │   │   ├── 📁 hooks/           # Custom React hooks
 │   │   │   ├── use-logout.ts   # Enhanced logout with localStorage
+│   │   │   ├── use-mobile.tsx  # Mobile detection hook
 │   │   │   └── use-toast.ts    # Toast hook
 │   │   ├── 📁 lib/             # Utility libraries
 │   │   │   ├── axios.ts        # Axios config with Bearer token
 │   │   │   └── utils.ts        # Utility functions
 │   │   ├── 📁 pages/           # Page components
+│   │   │   ├── Dashboard.tsx   # Main dashboard
+│   │   │   ├── Index.tsx       # Landing page
+│   │   │   ├── Login.tsx       # Login page
+│   │   │   ├── SignUp.tsx      # Registration page
+│   │   │   └── NotFound.tsx    # 404 page
 │   │   └── 📁 types/           # TypeScript definitions
+│   │       └── index.ts        # Type definitions
 │   ├── 📁 public/
-│   │   ├── _redirects          # Netlify/S3 routing configuration
-│   │   └── favicon.ico
+│   │   ├── _redirects          # S3/Netlify routing configuration
+│   │   ├── favicon.ico
+│   │   ├── placeholder.svg
+│   │   └── robots.txt
 │   ├── vite.config.ts          # Vite configuration
 │   ├── tailwind.config.ts      # Tailwind CSS configuration
-│   ├── .env.production         # Production API endpoints
-│   └── package.json
-│
-├── 📁 .github/workflows/       # CI/CD pipelines
-│   ├── deploy-backend.yml      # Backend deployment to EC2
-│   └── deploy-frontend.yml     # Frontend deployment to S3
+│   ├── components.json         # Shadcn/ui configuration
+│   └── package.json            # Dependencies and scripts
 │
 ├── nginx-expense-tracker.conf  # nginx reverse proxy configuration
-├── fix-cors-deployment.sh      # CORS deployment script
-├── test-localStorage-auth.sh   # Authentication testing script
-├── AUTHENTICATION_MIGRATION.md # Cookie to localStorage migration guide
-├── CORS_FIX_SUMMARY.md        # CORS troubleshooting guide
 └── README.md                   # This file
 ```
 
@@ -186,16 +195,15 @@ cd Backend
 # Install dependencies
 npm install
 
-# Create environment file
-cp .env.example .env
+# Create environment file (create .env based on your needs)
+touch .env
 
-# Edit the .env file with your configuration
-# Required variables:
-# - MONGODB_URI=mongodb://localhost:27017/budget-tracker
-# - JWT_SECRET=your-secret-key
-# - PORT=5000
-# - NODE_ENV=development
-# - FRONTEND_URL=http://localhost:3000
+# Add the following to .env file:
+# MONGODB_URI=mongodb://localhost:27017/budget-tracker
+# JWT_SECRET=your-super-secret-jwt-key-here
+# PORT=5000
+# NODE_ENV=development
+# FRONTEND_URL=http://localhost:3000
 ```
 
 ### 3. Frontend Setup
@@ -207,17 +215,14 @@ cd Frontend
 # Install dependencies
 npm install
 
-# Create environment file
-cp .env.example .env
+# Create environment file (create .env based on your needs)
+touch .env
 
-# Edit the .env file with your configuration
-# Required variables:
-# - VITE_BACKEND_URL=http://localhost:5000
+# Add the following to .env file:
+# VITE_BACKEND_URL=http://localhost:5000
 ```
 
 ### 4. Start the Application
-
-**Option A: Start both servers separately**
 
 ```bash
 # Terminal 1 - Start Backend
@@ -229,31 +234,21 @@ cd Frontend
 npm run dev
 ```
 
-**Option B: Using the test script**
-
-```bash
-# Make the script executable
-chmod +x test-localStorage-auth.sh
-
-# Run the authentication test script
-./test-localStorage-auth.sh
-```
-
 ### 5. Access the Application
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5000
-- **Health Check**: http://localhost:5000/health
+- **API Root**: http://localhost:5000/ (returns "API SERVER IS READY!")
 
 ## 🔧 Environment Variables
 
 ### Backend (.env)
 
 ```env
-# Database
+# Database Configuration
 MONGODB_URI=mongodb://localhost:27017/budget-tracker
 
-# Authentication
+# JWT Authentication
 JWT_SECRET=your-super-secret-jwt-key-here
 
 # Server Configuration
@@ -267,10 +262,10 @@ FRONTEND_URL=http://localhost:3000
 ### Backend Production (.env.production)
 
 ```env
-# Database
+# Database Configuration
 MONGODB_URI=mongodb://your-production-mongodb-uri
 
-# Authentication
+# JWT Authentication
 JWT_SECRET=your-production-jwt-secret
 
 # Server Configuration
@@ -295,112 +290,628 @@ VITE_BACKEND_URL=http://localhost:5000
 VITE_BACKEND_URL=http://13.204.100.131
 ```
 
-## 📡 API Endpoints
+## 📡 API Endpoints & Usage
 
-### Authentication (localStorage-based JWT)
-- `POST /api/auth/signup` - Register a new user
-- `POST /api/auth/login` - Login user (returns JWT token for localStorage storage)
-- `POST /api/auth/logout` - Logout user (frontend clears localStorage)
-- `GET /api/auth/check` - Check authentication status (requires Bearer token)
+### Base URL
+- **Development**: `http://localhost:5000`
+- **Production**: `http://13.204.100.131`
 
-### Transactions
-- `GET /api/transactions` - Get user's transactions (requires authentication)
-- `POST /api/transaction/create` - Create a new transaction (requires authentication)
-- `PUT /api/transaction/:id` - Update a transaction (requires authentication)
-- `DELETE /api/transaction/:id` - Delete a transaction (requires authentication)
-
-### Health Check
-- `GET /health` - Server health status
-- `GET /api/health` - API health status
-
-### Request Headers
-All authenticated requests must include:
+### Content Type
+All API requests should include:
 ```
-Authorization: Bearer <jwt-token>
 Content-Type: application/json
 ```
 
-### Response Format
+### Authentication
+Protected endpoints require JWT token in header:
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+---
+
+## 🔐 Authentication Endpoints
+
+### 1. Root Endpoint
+**GET** `/`
+
+Check if the API server is running.
+
+```bash
+curl -X GET http://localhost:5000/
+```
+
+**Response:**
+```
+API SERVER IS READY!
+```
+
+---
+
+### 2. User Registration (Signup)
+**POST** `/api/auth/signup`
+
+Register a new user account.
+
+**Request Body:**
+```json
+{
+  "name": "string (required)",
+  "email": "string (required, valid email)",
+  "password": "string (required)"
+}
+```
+
+**Example:**
+```bash
+curl -X POST http://localhost:5000/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "password": "SecurePassword123"
+  }'
+```
+
+**Success Response (201):**
+```json
+{
+  "message": "User created successfully",
+  "success": true
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "message": "User with this email already exists",
+  "error": "USER_EXISTS"
+}
+```
+
+---
+
+### 3. User Login
+**POST** `/api/auth/login`
+
+Authenticate user and receive JWT token.
+
+**Request Body:**
+```json
+{
+  "email": "string (required)",
+  "password": "string (required)"
+}
+```
+
+**Example:**
+```bash
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john.doe@example.com",
+    "password": "SecurePassword123"
+  }'
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Login successful",
+  "user": {
+    "id": "65f8b4c4d9e7f8a9b0c1d2e3",
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "createdAt": "2024-01-15T10:30:00.000Z",
+    "updatedAt": "2024-01-15T10:30:00.000Z"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "message": "Invalid credentials",
+  "error": "INVALID_CREDENTIALS"
+}
+```
+
+---
+
+### 4. Check Authentication Status
+**GET** `/api/auth/check`
+
+Verify if the current JWT token is valid.
+
+**Headers Required:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Example:**
+```bash
+curl -X GET http://localhost:5000/api/auth/check \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+**Success Response (200):**
 ```json
 {
   "success": true,
-  "message": "Operation successful",
-  "data": { ... },
-  "token": "jwt-token-here" // Only in login response
+  "user": {
+    "id": "65f8b4c4d9e7f8a9b0c1d2e3",
+    "name": "John Doe",
+    "email": "john.doe@example.com"
+  }
 }
+```
+
+**Error Response (401):**
+```json
+{
+  "success": false,
+  "message": "Not authenticated"
+}
+```
+
+---
+
+### 5. User Logout
+**POST** `/api/auth/logout`
+
+Logout user (frontend should clear localStorage token).
+
+**Example:**
+```bash
+curl -X POST http://localhost:5000/api/auth/logout
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Logged out successfully"
+}
+```
+
+---
+
+## 💰 Transaction Endpoints
+
+### 1. Create Transaction
+**POST** `/api/transaction/create`
+
+Create a new income or expense transaction.
+
+**Headers Required:**
+```
+Authorization: Bearer <your-jwt-token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "type": "string (required: 'income' or 'expense')",
+  "amount": "number (required, positive)",
+  "category": "string (required)",
+  "description": "string (required)",
+  "date": "string (required, valid date format)"
+}
+```
+
+**Example - Income Transaction:**
+```bash
+curl -X POST http://localhost:5000/api/transaction/create \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -d '{
+    "type": "income",
+    "amount": 5000,
+    "category": "Salary",
+    "description": "Monthly salary payment",
+    "date": "2024-01-15"
+  }'
+```
+
+**Example - Expense Transaction:**
+```bash
+curl -X POST http://localhost:5000/api/transaction/create \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -d '{
+    "type": "expense",
+    "amount": 1200,
+    "category": "Groceries",
+    "description": "Weekly grocery shopping",
+    "date": "2024-01-16"
+  }'
+```
+
+**Success Response (201):**
+```json
+{
+  "message": "Transaction created successfully",
+  "success": true
+}
+```
+
+**Error Response (400) - Missing Fields:**
+```json
+{
+  "message": "All fields (userId, amount, description, category, type, date) are required",
+  "error": "MISSING_FIELDS"
+}
+```
+
+**Error Response (400) - Invalid Amount:**
+```json
+{
+  "message": "Amount must be a valid number",
+  "error": "INVALID_AMOUNT"
+}
+```
+
+**Error Response (400) - Invalid Type:**
+```json
+{
+  "message": "Type must be either \"income\" or \"expense\"",
+  "error": "INVALID_TYPE"
+}
+```
+
+**Error Response (400) - Invalid Date:**
+```json
+{
+  "message": "Date must be in a valid format",
+  "error": "INVALID_DATE"
+}
+```
+
+---
+
+### 2. Get All Transactions
+**GET** `/api/transactions`
+
+Retrieve all transactions for the authenticated user.
+
+**Headers Required:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Example:**
+```bash
+curl -X GET http://localhost:5000/api/transactions \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Transactions retrieved successfully",
+  "success": true,
+  "transactions": [
+    {
+      "id": "65f8b5c4d9e7f8a9b0c1d2e4",
+      "type": "income",
+      "amount": 5000,
+      "category": "Salary",
+      "description": "Monthly salary payment",
+      "date": "2024-01-15T00:00:00.000Z",
+      "userId": "65f8b4c4d9e7f8a9b0c1d2e3",
+      "createdAt": "2024-01-15T10:35:00.000Z",
+      "updatedAt": "2024-01-15T10:35:00.000Z"
+    },
+    {
+      "id": "65f8b5c4d9e7f8a9b0c1d2e5",
+      "type": "expense",
+      "amount": 1200,
+      "category": "Groceries",
+      "description": "Weekly grocery shopping",
+      "date": "2024-01-16T00:00:00.000Z",
+      "userId": "65f8b4c4d9e7f8a9b0c1d2e3",
+      "createdAt": "2024-01-15T10:40:00.000Z",
+      "updatedAt": "2024-01-15T10:40:00.000Z"
+    }
+  ]
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "message": "User authentication failed",
+  "error": "USER_NOT_AUTHENTICATED"
+}
+```
+
+---
+
+### 3. Update Transaction
+**PUT** `/api/transaction/:id`
+
+Update an existing transaction by ID.
+
+**Headers Required:**
+```
+Authorization: Bearer <your-jwt-token>
+Content-Type: application/json
+```
+
+**Path Parameters:**
+- `id` - Transaction ID (required)
+
+**Request Body (all fields optional):**
+```json
+{
+  "type": "string (optional: 'income' or 'expense')",
+  "amount": "number (optional)",
+  "category": "string (optional)",
+  "description": "string (optional)",
+  "date": "string (optional, valid date format)"
+}
+```
+
+**Example:**
+```bash
+curl -X PUT http://localhost:5000/api/transaction/65f8b5c4d9e7f8a9b0c1d2e4 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -d '{
+    "amount": 5500,
+    "description": "Monthly salary payment - updated amount"
+  }'
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Transaction updated successfully",
+  "success": true,
+  "transaction": {
+    "id": "65f8b5c4d9e7f8a9b0c1d2e4",
+    "type": "income",
+    "amount": 5500,
+    "category": "Salary",
+    "description": "Monthly salary payment - updated amount",
+    "date": "2024-01-15T00:00:00.000Z",
+    "userId": "65f8b4c4d9e7f8a9b0c1d2e3",
+    "createdAt": "2024-01-15T10:35:00.000Z",
+    "updatedAt": "2024-01-15T11:00:00.000Z"
+  }
+}
+```
+
+**Error Response (400) - Transaction Not Found:**
+```json
+{
+  "message": "Transaction not found or access denied",
+  "error": "TRANSACTION_NOT_FOUND"
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "message": "User authentication failed",
+  "error": "USER_NOT_AUTHENTICATED"
+}
+```
+
+---
+
+### 4. Delete Transaction
+**DELETE** `/api/transaction/:id`
+
+Delete a transaction by ID.
+
+**Headers Required:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Path Parameters:**
+- `id` - Transaction ID (required)
+
+**Example:**
+```bash
+curl -X DELETE http://localhost:5000/api/transaction/65f8b5c4d9e7f8a9b0c1d2e4 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Transaction deleted successfully",
+  "success": true
+}
+```
+
+**Error Response (400) - Transaction Not Found:**
+```json
+{
+  "message": "Transaction not found or access denied",
+  "error": "TRANSACTION_NOT_FOUND"
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "message": "User authentication failed",
+  "error": "USER_NOT_AUTHENTICATED"
+}
+```
+
+---
+
+## 🧪 Testing API Endpoints
+
+### Automated Testing Script
+
+We've provided a comprehensive testing script that tests all API endpoints with proper error handling and colored output. The script is located at `test-api-endpoints.sh` in the project root.
+
+**To run the automated tests:**
+
+```bash
+# Make sure your backend server is running
+cd Backend
+npm run dev
+
+# In another terminal, run the test script
+cd /path/to/elegant-budget-tracker
+chmod +x test-api-endpoints.sh
+./test-api-endpoints.sh
+```
+
+The script will:
+- ✅ Test all 9 API endpoints
+- ✅ Handle authentication flow automatically
+- ✅ Test error scenarios and edge cases
+- ✅ Provide colored output for easy reading
+- ✅ Generate detailed test results summary
+- ✅ Work without external dependencies (no jq required)
+
+### Manual Testing Examples
+
+For manual testing or integration with other tools, here are individual curl commands:
+
+#### Authentication Flow Test
+```bash
+BASE_URL="http://localhost:5000"
+
+# 1. Test server status
+curl -X GET $BASE_URL/
+
+# 2. Register new user
+curl -X POST $BASE_URL/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test User",
+    "email": "test@example.com",
+    "password": "TestPassword123"
+  }'
+
+# 3. Login and get token
+curl -X POST $BASE_URL/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "password": "TestPassword123"
+  }'
+
+# Extract token and use it in subsequent requests
+TOKEN="your_jwt_token_here"
+
+# 4. Check authentication
+curl -X GET $BASE_URL/api/auth/check \
+  -H "Authorization: Bearer $TOKEN"
+
+# 5. Create income transaction
+curl -X POST $BASE_URL/api/transaction/create \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "type": "income",
+    "amount": 5000,
+    "category": "Salary",
+    "description": "Monthly salary",
+    "date": "2024-01-15"
+  }'
+
+# 6. Get all transactions
+curl -X GET $BASE_URL/api/transactions \
+  -H "Authorization: Bearer $TOKEN"
+
+# 7. Test logout
+curl -X POST $BASE_URL/api/auth/logout
+```
+
+### Error Testing Examples
+
+```bash
+# Test missing authentication
+curl -X GET http://localhost:5000/api/transactions
+
+# Test invalid credentials
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "wrong@example.com",
+    "password": "wrongpassword"
+  }'
+
+# Test invalid transaction data
+curl -X POST http://localhost:5000/api/transaction/create \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "type": "invalid_type",
+    "amount": "not_a_number",
+    "category": "",
+    "description": "",
+    "date": "invalid_date"
+  }'
 ```
 
 ## 🌐 Current Deployment
 
-### Production URLs (Updated)
+### Production URLs
 - **Frontend**: http://expencetracker9993.s3-website.ap-south-1.amazonaws.com
 - **Backend**: http://13.204.100.131 (via nginx reverse proxy)
 - **API Base**: http://13.204.100.131/api
-- **Health Check**: http://13.204.100.131/health
 
-### Architecture Summary
-- **Frontend**: React build deployed on AWS S3 static hosting
-- **Backend**: Node.js Express server on AWS EC2 Ubuntu instance
-- **Proxy**: nginx reverse proxy handling CORS and routing
-- **Database**: MongoDB (Atlas or local instance)
-- **Authentication**: JWT tokens stored in localStorage (no cookie CORS issues)
-
-## 🧪 Testing
-
+### Production Testing
 ```bash
-# Run backend tests
-cd Backend
-npm test
-
-# Run frontend tests
-cd Frontend
-npm test
-
-# Run linting
-npm run lint
-
-# Test authentication flow
-chmod +x test-localStorage-auth.sh
-./test-localStorage-auth.sh
+# Test production API
+curl -X GET http://13.204.100.131/
 
 # Test CORS configuration
 curl -H "Origin: http://expencetracker9993.s3-website.ap-south-1.amazonaws.com" \
      -H "Access-Control-Request-Method: POST" \
-     -H "Access-Control-Request-Headers: X-Requested-With,Content-Type,Authorization" \
+     -H "Access-Control-Request-Headers: Content-Type,Authorization" \
      -X OPTIONS http://13.204.100.131/api/auth/login
 ```
 
-## 🐳 Docker Support
+## 🛠️ Built With
 
-```bash
-# Build and run with Docker Compose
-docker-compose up --build
+### Backend Technologies
+- **Node.js** - JavaScript runtime for server-side development
+- **Express.js** - Minimal and flexible web application framework
+- **TypeScript** - Type safety for backend development
+- **MongoDB** - NoSQL document database
+- **Mongoose** - MongoDB ODM with schema validation
+- **JWT (jsonwebtoken)** - Stateless authentication tokens
+- **bcrypt** - Password hashing for security
+- **CORS** - Cross-origin resource sharing middleware
 
-# Run in production mode
-docker-compose -f docker-compose.prod.yml up
-```
+### Frontend Technologies
+- **React 18** - Modern UI library with hooks and context
+- **TypeScript** - Type safety and better developer experience
+- **Vite** - Fast build tool and development server
+- **Tailwind CSS** - Utility-first CSS framework
+- **Radix UI** - Accessible headless UI components
+- **React Hook Form** - Performant form management
+- **Recharts** - Responsive chart library for data visualization
+- **Axios** - HTTP client with interceptors for JWT authentication
+- **React Router** - Client-side routing with protected routes
+
+### DevOps & Infrastructure
+- **nginx** - High-performance reverse proxy and load balancer
+- **PM2** - Advanced production process manager for Node.js
+- **AWS S3** - Static website hosting for frontend
+- **AWS EC2** - Virtual server for backend hosting
 
 ## 🚢 Deployment
 
-### Production Architecture
-
-The application is designed for a cloud-native architecture:
-
-- **Frontend**: AWS S3 Static Website Hosting
-- **Backend**: AWS EC2 with nginx reverse proxy
-- **Database**: MongoDB Atlas or EC2-hosted MongoDB
-- **Load Balancer**: nginx (handles CORS, SSL termination, static assets)
-
 ### nginx Configuration
-
-The project includes a production-ready nginx configuration (`nginx-expense-tracker.conf`):
-
 ```nginx
 server {
     listen 80;
     server_name 13.204.100.131;
 
-    # Proxy API requests to Node.js backend
     location /api {
         proxy_pass http://localhost:5000;
         proxy_http_version 1.1;
@@ -413,257 +924,65 @@ server {
         proxy_cache_bypass $http_upgrade;
     }
 
-    # Health check endpoints
-    location /health {
+    location / {
         proxy_pass http://localhost:5000;
-        # ... additional proxy headers
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 ```
 
-### AWS EC2 Deployment
-
-1. **Deploy nginx configuration:**
+### PM2 Deployment
 ```bash
-# Copy nginx config to server
-sudo cp nginx-expense-tracker.conf /etc/nginx/sites-available/expense-tracker
-sudo ln -s /etc/nginx/sites-available/expense-tracker /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-2. **Deploy backend application:**
-```bash
-# Use the deployment script
-chmod +x fix-cors-deployment.sh
-./fix-cors-deployment.sh
-```
-
-3. **Process Management with PM2:**
-```bash
-# Start application with PM2
+# Start the application
 cd Backend
 pm2 start ecosystem.config.js --env production
-pm2 save
-pm2 startup
+
+# Monitor the application
+pm2 logs
+pm2 status
 ```
-
-### AWS S3 Frontend Deployment
-
-```bash
-# Build frontend for production
-cd Frontend
-npm run build
-
-# Deploy to S3 (using AWS CLI)
-aws s3 sync dist/ s3://expencetracker9993 --delete
-aws s3 website s3://expencetracker9993 --index-document index.html --error-document index.html
-```
-
-### GitHub Actions CI/CD
-
-The project includes automated deployment workflows:
-
-1. **Backend Deployment**: `.github/workflows/deploy-backend.yml`
-2. **Frontend Deployment**: `.github/workflows/deploy-frontend.yml`
-
-Required GitHub Secrets:
-- `EC2_HOST` - Your EC2 instance IP (e.g., 13.204.100.131)
-- `EC2_USER` - EC2 username (usually 'ubuntu')
-- `EC2_SSH_KEY` - Your private SSH key
-- `AWS_ACCESS_KEY_ID` - AWS access key for S3 deployment
-- `AWS_SECRET_ACCESS_KEY` - AWS secret key for S3 deployment
-
-### Manual Production Deployment
-
-```bash
-# Build both applications
-cd Backend && npm run build
-cd ../Frontend && npm run build
-
-# Start production backend
-cd Backend
-NODE_ENV=production npm start
-
-# Or use PM2
-pm2 start ecosystem.config.js --env production
-```
-
-### Environment-Specific Configurations
-
-- **Development**: Direct API calls to `localhost:5000`
-- **Production**: API calls through nginx reverse proxy on port 80
-- **CORS**: Configured for S3 to EC2 communication
-- **Authentication**: localStorage-based JWT (no cookie CORS issues)
-
-## 🛠️ Built With
-
-### Frontend
-- **React 18** - Modern UI library with hooks and context
-- **TypeScript** - Type safety and better developer experience
-- **Vite** - Fast build tool and development server
-- **Tailwind CSS** - Utility-first CSS framework
-- **Radix UI** - Accessible headless UI components
-- **React Hook Form** - Performant form management
-- **Recharts** - Responsive chart library for data visualization
-- **Axios** - HTTP client with interceptors for JWT authentication
-- **React Router** - Client-side routing with protected routes
-
-### Backend
-- **Node.js** - JavaScript runtime for server-side development
-- **Express.js** - Minimal and flexible web application framework
-- **TypeScript** - Type safety for backend development
-- **MongoDB** - NoSQL document database
-- **Mongoose** - MongoDB ODM with schema validation
-- **JWT (jsonwebtoken)** - Stateless authentication tokens
-- **bcrypt** - Password hashing for security
-- **CORS** - Cross-origin resource sharing middleware
-- **Helmet** - Security middleware for Express
-
-### DevOps & Infrastructure
-- **nginx** - High-performance reverse proxy and load balancer
-- **PM2** - Advanced production process manager for Node.js
-- **GitHub Actions** - CI/CD pipeline automation
-- **AWS S3** - Static website hosting for frontend
-- **AWS EC2** - Virtual server for backend hosting
-- **Docker** - Containerization (optional)
-- **ESLint** - Code linting and style enforcement
-- **Prettier** - Code formatting
-
-### Development Tools
-- **Vite** - Fast HMR and optimized builds
-- **TypeScript Compiler** - Type checking and compilation
-- **Concurrently** - Run multiple npm scripts simultaneously
-- **Nodemon** - Automatic server restart during development
-
-## 📈 Features Overview
-
-### Dashboard
-- 📊 Visual expense breakdown with pie charts
-- 💰 Real-time balance calculation
-- 📅 Transaction history with filtering
-- ➕ Quick transaction entry
-
-### Transaction Management
-- ✅ Add income and expense transactions
-- 🏷️ Categorize transactions
-- 📝 Add descriptions and notes
-- 📅 Date tracking
-- ✏️ Edit and delete transactions
-
-### Authentication & Security
-- 🔐 **JWT-based Authentication**: Stateless authentication using JSON Web Tokens
-- 💾 **localStorage Token Storage**: No cookie-related CORS issues in production
-- 🔒 **Password Security**: bcrypt hashing with salt rounds
-- 🛡️ **Protected Routes**: Client-side and server-side route protection
-- 🌐 **CORS Optimization**: Proper cross-origin configuration for S3-to-EC2 communication
-- 📱 **Token Refresh**: Automatic token validation and logout on expiry
-
-### Performance & Scalability
-- ⚡ **nginx Reverse Proxy**: Load balancing and request optimization
-- 🚀 **PM2 Process Management**: Zero-downtime deployments and clustering
-- 📦 **Code Splitting**: Optimized bundle sizes with Vite
-- 🎯 **Lazy Loading**: Route-based code splitting for faster initial loads
-- 💾 **Efficient State Management**: React Context with optimized re-renders
-
-### Production Features
-- 🔄 **Zero-Downtime Deployment**: PM2 graceful restarts
-- 📊 **Health Monitoring**: Built-in health check endpoints
-- 🚨 **Error Handling**: Comprehensive error boundaries and logging
-- 🔍 **Request Logging**: Detailed API request tracking
-- 🛡️ **Security Headers**: Helmet.js security middleware
 
 ## 🚨 Troubleshooting
 
-### Common Issues
+### Common API Errors
 
-#### CORS Errors in Production
-If you encounter CORS issues when deploying:
-
-1. **Check nginx configuration**:
-```bash
-sudo nginx -t
-sudo tail -f /var/log/nginx/error.log
-```
-
-2. **Verify backend CORS settings**:
-   - Ensure `FRONTEND_URL` in `.env.production` matches your S3 website URL
-   - Confirm `credentials: false` in CORS configuration
-
-3. **Test CORS preflight**:
-```bash
-curl -H "Origin: http://expencetracker9993.s3-website.ap-south-1.amazonaws.com" \
-     -H "Access-Control-Request-Method: POST" \
-     -H "Access-Control-Request-Headers: Content-Type,Authorization" \
-     -X OPTIONS http://13.204.100.131/api/auth/login
-```
-
-#### Authentication Issues
-1. **Check localStorage**: Verify JWT token is stored in browser localStorage
-2. **Token Format**: Ensure requests include `Authorization: Bearer <token>` header
-3. **Token Expiry**: Check browser console for 401/403 errors
-
-#### Deployment Issues
-1. **PM2 Process**: Check if backend is running with `pm2 status`
-2. **nginx Status**: Verify nginx is running with `sudo systemctl status nginx`
-3. **Port Conflicts**: Ensure port 5000 is available for Node.js
+| Status Code | Error | Description | Solution |
+|-------------|--------|-------------|----------|
+| 400 | MISSING_FIELDS | Required fields not provided | Check request body contains all required fields |
+| 400 | INVALID_AMOUNT | Amount is not a valid number | Ensure amount is a positive number |
+| 400 | INVALID_TYPE | Transaction type invalid | Use only 'income' or 'expense' |
+| 400 | INVALID_DATE | Date format invalid | Use valid date format (YYYY-MM-DD) |
+| 401 | USER_NOT_AUTHENTICATED | Missing or invalid JWT token | Include valid Authorization header |
+| 401 | INVALID_CREDENTIALS | Wrong email/password | Check login credentials |
+| 404 | TRANSACTION_NOT_FOUND | Transaction doesn't exist | Verify transaction ID and ownership |
+| 500 | SERVER_ERROR | Internal server error | Check server logs and database connection |
 
 ### Debug Commands
-
 ```bash
 # Check backend logs
-pm2 logs expense-tracker
+pm2 logs
 
-# Check nginx logs
-sudo tail -f /var/log/nginx/access.log
-sudo tail -f /var/log/nginx/error.log
+# Test database connection
+mongo mongodb://localhost:27017/budget-tracker
 
-# Test API endpoints
-curl -X GET http://localhost:5000/health
-curl -X GET http://13.204.100.131/api/health
+# Check if backend is running
+curl -X GET http://localhost:5000/
 
-# Check process status
-pm2 status
-sudo systemctl status nginx
+# Verify JWT token (decode)
+# Use jwt.io to decode and verify token structure
 ```
-
-## 📚 Migration Guides
-
-The project includes comprehensive migration documentation:
-
-- **`AUTHENTICATION_MIGRATION.md`**: Complete guide for migrating from cookie-based to localStorage-based authentication
-- **`CORS_FIX_SUMMARY.md`**: Solutions for common CORS issues in production
-- **`MIGRATION_COMPLETE.md`**: Summary of completed migration changes
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Follow TypeScript strict mode conventions
-- Use ESLint and Prettier for code formatting
-- Write tests for new features
-- Update documentation for API changes
-- Ensure CORS compatibility for production deployment
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
 
 **Rohit** - [GitHub Profile](https://github.com/rohitTo95)
-
-## 🙏 Acknowledgments
-
-- Thanks to all contributors who have helped this project grow
-- Inspired by modern budgeting applications and enterprise architecture patterns
-- Built with love for the open-source community
-- Special thanks to the React, Node.js, and nginx communities
 
 ---
 
