@@ -100,11 +100,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       console.log('Checking authentication token from localStorage...');
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/check`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      console.log('Making GET request to: /api/auth/check');
+      console.log('Authorization header added with token');
+      const response = await axios.get('/api/auth/check');
       if (response.data.success && response.data.user) {
         // Update username in state and localStorage (in case it changed on server)
         setUserName(response.data.user.name);
