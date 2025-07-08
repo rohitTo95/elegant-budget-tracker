@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Configure axios base URL from environment variables
-const baseURL = import.meta.env.VITE_BACKEND_URL || import.meta.env.production.VITE_BACKEND_URL;
+const baseURL = import.meta.env.VITE_BACKEND_URL || 'http://13.204.100.131';
 
 const axiosInstance = axios.create({
   baseURL,
