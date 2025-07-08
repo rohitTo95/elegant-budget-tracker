@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Configure axios base URL from environment variables
-const baseURL = import.meta.env.VITE_BACKEND_URL;
+const baseURL = import.meta.env.VITE_BACKEND_URL || import.meta.env.production.VITE_BACKEND_URL;
 
 const axiosInstance = axios.create({
   baseURL,
@@ -13,7 +13,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     console.log(`Making ${config.method?.toUpperCase()} request to: ${config.baseURL}${config.url}`);
-    
+
     // Get token from localStorage and add to Authorization header
     const token = localStorage.getItem('token');
     if (token) {
@@ -21,7 +21,7 @@ axiosInstance.interceptors.request.use(
       console.log(baseURL)
       console.log('Authorization header added with token');
     }
-    
+
     return config;
   },
   (error) => {
@@ -36,11 +36,11 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 || error.response?.status === 403) {
       // Token is invalid, expired, or missing
       console.error('Authentication failed - token invalid or expired');
-      
+
       // Clear token and username from localStorage
       localStorage.removeItem('token');
       localStorage.removeItem('username');
-      
+
       // Only redirect if we're not already on login/signup pages
       const currentPath = window.location.pathname;
       if (!['/login', '/signup', '/'].includes(currentPath)) {
