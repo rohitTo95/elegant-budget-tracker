@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from '@/lib/axios';
-import dotenv from 'dotenv';
-dotenv.config();
 interface AuthContextType {
   userName: string | null;
   isAuthenticated: boolean;
@@ -102,7 +100,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       console.log('Checking authentication token from localStorage...');
-      const response = await axios.get(`${process.env.VITE_BACKEND_URL}/api/auth/check`, {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/check`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
