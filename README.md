@@ -1,4 +1,5 @@
 # 💰 Elegant Budget Tracker
+<img width="2539" height="1265" alt="Screenshot From 2025-07-12 00-54-14" src="https://github.com/user-attachments/assets/b0ff1f32-f734-4808-8d82-0d09b1733a6b" />
 
 <div align="center">
   <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
